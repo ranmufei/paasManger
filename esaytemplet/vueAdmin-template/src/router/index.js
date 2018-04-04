@@ -38,26 +38,40 @@ export const constantRouterMap = [
     }]
   },
     {
-    path: '/service',
+    path: '/stack',
     component: Layout,
+    meta: { title: '微服务管理', icon: 'sitemap' },
     children: [
       {
         path: 'index',
-        name: '应用栈',
-        component: () => import('@/views/dashboard/info'),
-        meta: { title: '应用栈', icon: 'sitemap' }
+        name: '微服务',
+        component: () => import('@/views/stack/index'),
+        meta: { title: '微服务', icon: 'sitemap' }
+      },
+      {
+        path: 'add',
+        name: '新增微服务',
+        component: () => import('@/views/stack/add'),
+        meta: { title: '新增微服务', icon: 'sitemap' }
       }
     ]
   },
     {
     path: '/host',
     component: Layout,
+    meta: { title: '主机管理', icon: 'host' },
     children: [
       {
         path: 'index',
         name: '主机管理',
-        component: () => import('@/views/form/index'),
+        component: () => import('@/views/host/index'),
         meta: { title: '主机管理', icon: 'host' }
+      },
+       {
+        path: 'containers',
+        name: '容器管理',
+        component: () => import('@/views/host/containers'),
+        meta: { title: '容器管理', icon: 'containerservice' }
       }
     ]
   },

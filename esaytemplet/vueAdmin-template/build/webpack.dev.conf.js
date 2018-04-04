@@ -35,8 +35,14 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     overlay: config.dev.errorOverlay
       ? { warnings: false, errors: true }
       : false,
-    publicPath: config.dev.assetsPublicPath,
-    proxy: config.dev.proxyTable,
+    publicPath: config.dev.assetsPublicPath,   
+    proxy: {
+        "/v1": {
+          target: "http://phpmyadmin.test.03in.com:8080",
+          secure: false,
+          changeOrigin: true,
+        }
+      },
     quiet: true, // necessary for FriendlyErrorsPlugin
     watchOptions: {
       poll: config.dev.poll,
