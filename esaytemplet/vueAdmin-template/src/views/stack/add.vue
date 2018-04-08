@@ -1,36 +1,36 @@
 <template>
 <div class="box">
  <el-row class="box-row">
-<el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+<el-form :model="data"  :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
   <el-form-item label="名称" prop="name">
     <el-input v-model="data.name"></el-input>
   </el-form-item>
 
 
   <el-form-item label="镜像" prop="name">
-    <el-input v-model="data.launchConfig.imageUuid"></el-input>
+    <el-input v-model="data.launchConfig.image"></el-input>
   </el-form-item>
 
-  <el-form-item  prop="type">
-    <el-checkbox-group v-model="ruleForm.type">
-      <el-checkbox label="创建前拉取镜像" name="type" selected></el-checkbox>      
-    </el-checkbox-group>
-  </el-form-item>
+<!--   <el-form-item  prop="type">
 
- 
-  
+  <el-checkbox-group v-model="data.launchConfig['labels.io.rancher.container.pull_image']">
+      <el-checkbox label="创建前拉取镜像" name="type" ></el-checkbox>      
+  </el-checkbox-group>
+
+</el-form-item> -->
+
   <el-form-item label="运行数量" prop="delivery">
     <el-slider v-model="data.scale"></el-slider>
   </el-form-item>
   
   <el-form-item label="描述" prop="desc2">
-    <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+    <el-input type="textarea" v-model="data.description"></el-input>
   </el-form-item>
 
   <el-form-item label=" " prop="desc2">
       <el-col :span="12">
       
-        <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle>端口映射</el-button></el-row>
+        <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle @click="addport('add',0)">端口映射</el-button></el-row>
         
        <el-col :span="6">
           <span class="padding-left10">外部端口</span>
@@ -43,7 +43,8 @@
         <el-col :span="6">
           <span class="padding-left10">协议</span>
         </el-col>
-       <el-row class="marin" >
+
+       <el-row class="marin" v-for="(item,key) in data.ports">
             <el-col :span="6">
               <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
             </el-col>
@@ -58,32 +59,13 @@
                   <el-option label="udp" value="beijing"></el-option>
                 </el-select>
             </el-col>
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
+            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click="addport('del',key)"></i>   </el-col>
         </el-row>
   
-          <el-row class="marin" >
-            <el-col :span="6">
-              <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
-            </el-col>
-            <el-col class="line" :span="1" style="padding-left:5px">-</el-col> 
-            <el-col :span="6">
-                 <el-input  placeholder="例如:8080"></el-input>
-            </el-col>
-            <el-col class="line" :span="1" style="padding-left:5px">/</el-col> 
-            <el-col :span="6">
-                 <el-select v-model="ruleForm.region" placeholder="请选协议">
-                  <el-option label="tcp" value="shanghai" selected="selected"></el-option>
-                  <el-option label="udp" value="beijing"></el-option>
-                </el-select>
-            </el-col>
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
-        </el-row>
-
-
   </el-col>
   <el-col :span="12">
       
-        <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle>服务链接</el-button></el-row>
+        <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle @click="addlink('add',0)">服务链接</el-button></el-row>
         
        <el-col :span="12">
           <span class="padding-left10">目标服务</span>
@@ -94,39 +76,31 @@
         </el-col>
 
         
-       <el-row class="marin" >
+       <el-row class="marin" v-for="(item,key) in link">
    
             <el-col :span="10">
-                 <el-select v-model="ruleForm.region" placeholder="请选协议">
-                  <el-option label="tcp" value="shanghai" selected="selected"></el-option>
-                  <el-option label="udp" value="beijing"></el-option>
+                 
+              <el-select v-model="link[key]" placeholder="请选择">
+                   <el-option
+                      v-for="item in service"
+                      :key="item.id"
+                      :label="item.name"
+                      :value="item.name">
+                    </el-option>
                 </el-select>
+
+
             </el-col>
             <el-col class="line" :span="1" style="padding-left:5px">-</el-col> 
             <el-col :span="10">
-              <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
+              <el-input placeholder="例如：80"  auto-complete="off" v-model="item.name"></el-input>
             </el-col>
            
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
+            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click="addlink('del',key)"></i>   </el-col>
 
         </el-row>
   
-          <el-row class="marin" >
    
-            <el-col :span="10">
-                 <el-select v-model="ruleForm.region" placeholder="请选协议">
-                  <el-option label="tcp" value="shanghai" selected="selected"></el-option>
-                  <el-option label="udp" value="beijing"></el-option>
-                </el-select>
-            </el-col>
-            <el-col class="line" :span="1" style="padding-left:5px">-</el-col> 
-            <el-col :span="10">
-              <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
-            </el-col>
-           
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
-
-        </el-row>
 
   </el-col>
   </el-form-item>
@@ -135,21 +109,21 @@
       <el-tabs type="border-card">
       <el-tab-pane label="命令">
           
-          <el-form-item label="命令" prop="cmd">
-            <el-input v-model="ruleForm.name" class="marin"></el-input>
+          <el-form-item label="命令" >
+            <el-input v-model="data.launchConfig.command[0]" class="marin"></el-input>
           </el-form-item>
 
-          <el-form-item label="入口" prop="cmd">
-            <el-input v-model="ruleForm.name"  class="marin"></el-input>
+          <el-form-item label="入口" >
+            <el-input v-model="data.launchConfig.entryPoint"  class="marin"></el-input>
           </el-form-item>
 
-          <el-form-item label="工作目录" prop="cmd">
-            <el-input v-model="ruleForm.name"  class="marin"></el-input>
+          <el-form-item label="工作目录" >
+            <el-input v-model="data.launchConfig.workingDir"  class="marin"></el-input>
           </el-form-item>
 
-          <el-form-item label="环境变量" prop="cmd">
+          <el-form-item label="环境变量" >
             
-              <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle>添加环境变量</el-button></el-row>
+              <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle @click="addenvval('add',0)">添加环境变量</el-button></el-row>
               
             <el-col :span="12">
               <span class="padding-left10">变量</span>
@@ -160,7 +134,7 @@
             </el-col>
 
         
-       <el-row class="marin" >
+       <el-row class="marin" v-for="(item , key) in data.launchConfig.environment">
    
             <el-col :span="10">
                  <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
@@ -170,22 +144,10 @@
               <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
             </el-col>
            
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
+            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click="addenvval('del',key)"></i>   </el-col>
 
         </el-row>        
-       <el-row class="marin" >
-   
-            <el-col :span="10">
-                 <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
-            </el-col>
-            <el-col class="line" :span="1" style="padding-left:5px"> = </el-col> 
-            <el-col :span="10">
-              <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
-            </el-col>
-           
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
 
-        </el-row>
 
 
           </el-form-item>
@@ -194,14 +156,14 @@
       <el-tab-pane label="数据卷">
           
           <el-form-item label="数据卷映射" prop="cmd">
-            <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle  style="margin-left:5px ; "></el-button></el-row>
+            <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle  style="margin-left:5px ; " @click="addvolum('add',0)"></el-button></el-row>
           </el-form-item>
           
-          <el-form-item label=" " prop="cmd">
+          <el-form-item label=" " prop="cmd" v-for="(item , key) in data.launchConfig.dataVolumes"> 
               <el-col class="line" :span="20">
-                <el-input v-model="ruleForm.name" class="marin"></el-input>
+                <el-input v-model="item" class="marin" placeholder="格式 `/data:/data`"></el-input>
               </el-col>
-               <el-col class="line" :span="4" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
+               <el-col class="line" :span="4" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click="addvolum('del',key)"></i>   </el-col>
           </el-form-item>
 
 
@@ -211,21 +173,21 @@
           <el-form-item label="网络" prop="cmd">
             
                 <el-col :span="20">
-                     <el-select v-model="ruleForm.region" placeholder="请选协议"　style="margin-left:5px ; ">
-                      <el-option label="tcp" value="shanghai" selected="selected"></el-option>
-                      <el-option label="udp" value="beijing"></el-option>
+                     <el-select v-model="data.launchConfig.networkMode" placeholder="请选网络"　style="margin-left:5px ; ">
+                     
+                      <el-option  v-for="(item,key) in networkMode" :value="item" :label="item" ></el-option>
                     </el-select>
                 </el-col>
 
           </el-form-item>
   
-          <el-form-item label="请求IP" prop="cmd">
+          <!-- <el-form-item label="请求IP" prop="cmd">
             
                 <el-col :span="20">
                        <el-input v-model="ruleForm.name" class="marin"></el-input>
                 </el-col>
-
-          </el-form-item>
+          
+          </el-form-item> -->
   
           
 
@@ -236,7 +198,7 @@
             
               <el-form-item label="标签" prop="cmd">
             
-              <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle>添加标签</el-button></el-row>
+              <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle @click="addlab('add',0)">添加标签</el-button></el-row>
               
             <el-col :span="12">
               <span class="padding-left10">键</span>
@@ -247,7 +209,7 @@
             </el-col>
 
         
-       <el-row class="marin" >
+       <el-row class="marin" v-for="(item , key) in data.launchConfig.labels">
    
             <el-col :span="10">
                  <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
@@ -257,22 +219,9 @@
               <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
             </el-col>
            
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
+            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click="addlab('del',key)"></i>   </el-col>
 
-        </el-row>        
-       <el-row class="marin" >
-   
-            <el-col :span="10">
-                 <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
-            </el-col>
-            <el-col class="line" :span="1" style="padding-left:5px"> = </el-col> 
-            <el-col :span="10">
-              <el-input placeholder="例如：80"  auto-complete="off" ></el-input>
-            </el-col>
-           
-            <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click=""></i>   </el-col>
-
-        </el-row>
+        </el-row>  
 
 
           </el-form-item>
@@ -284,9 +233,12 @@
        <el-form-item label="容器运行主机" prop="cmd">
             
                 <el-col :span="20">
-                     <el-select v-model="ruleForm.region" placeholder="请选容器运行主机"　style="margin-left:5px ; ">
-                      <el-option label="tcp" value="shanghai" selected="selected"></el-option>
-                      <el-option label="udp" value="beijing"></el-option>
+                     <el-select v-model="data.launchConfig.requestedHostId" placeholder="请选容器运行主机"　style="margin-left:5px ; ">
+                     <el-option  v-for="(item,key) in hostlist" :labels="item.name"  :key="item.name" :value="item.id">
+                         <span style="float: left">{{item.name}}</span>
+                         <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
+
+                     </el-option>
                     </el-select>
                 </el-col>
 
@@ -305,6 +257,9 @@
 </div>
 </template>
 <script>
+
+import { getservice,hosts} from '@/api/paasApi'
+
   export default {
     data() {
       return {
@@ -332,6 +287,7 @@
                 "name": "always"
               },
               "imageUuid": '',
+              "image": '',
               "ports": ["8081:80/tcp", "8082:88/tcp"],
               "dataVolumes": ["/home/www/data:/data"],
               "dataVolumesFrom": [],
@@ -347,9 +303,9 @@
               "dataVolumesFromLaunchConfigs": [],
               "requestedHostId": "1h6",
               "command": ["echo", "helo"],
+              "entryPoint":null,
               "environment": {
-                "env1": "111",
-                "env2": "222"
+               
               },
               "count": null,
               "cpuSet": null,
@@ -391,9 +347,19 @@
             "selectorLink": null,
             "uuid": null,
             "vip": null,
-            "fqdn": null
-          }
-        ,
+            "fqdn": null,
+             "ports":[
+              {'wport':90,'nport':90,'tcp':'tcp'}
+             ]
+          },
+          "service":null,
+          "servicelink":[{"name":"nginx222","serviceId":"1s47"}]   ,
+           "link":[],
+           "env":{},
+           "envnum":0,
+           "labnum":0,
+           "networkMode":['Managed','Bridge','Host','None'] ,
+           "hostlist":null,
         ruleForm: {
           name: '',
           region: '',
@@ -407,7 +373,7 @@
         },
         rules: {
           name: [
-            { required: true, message: '请输入活动名称', trigger: 'blur' },
+            { required: true, message: '请输入服务名称', trigger: 'blur' },
             { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
           ],
           region: [
@@ -445,9 +411,75 @@
       resetForm(formName) {
         this.$refs[formName].resetFields();
       },
-      setimages(images){
-          return 'docker:'+images
+      setimages(){
+          this.data.launchConfig.imageUuid='docker:'+ this.data.launchConfig.image
+          //return 'docker:'+images
+      },
+      addport(type,index){       
+        if(type=='del'){
+          this.$delete(this.data.ports,index)          
+        }else{
+           this.$set(this.data.ports,this.data.ports.length, {'wport':90,'nport':90,'tcp':'tcp'})
+           //let portvalue =  this.data.ports[data.ports.length]['wport']+':'+this.data.ports[data.ports.length]['nport']+"/"+this.data.ports[data.ports.length]['tcp']
+           //this.$set(this.data.launchConfig.ports,this.data.ports.length,portvalue)
+
+        }
+       
+      },
+
+      getinfo(){
+        getservice().then(response=>{
+            this.service=response.data
+        },function(){
+
+        })
+
+        hosts().then(response=>{
+          this.hostlist=response.data
+        },function(){
+
+        })
+      },
+      addlink(type,key){
+        if(type==='del'){
+          this.$delete(this.link,key)
+        }else{
+           this.$set(this.link,this.link.length, {'serviceId':90,'name':90})
+        }        
+      },
+      addenvval(type,key){
+        if(type==='del'){
+          this.$delete(this.data.launchConfig.environment,key)          
+        }else{
+          this.envnum++
+          this.$set(this.data.launchConfig.environment,this.envnum,'value')
+        }        
+      },
+      addlab(type,key){
+        if(type==='del'){
+          this.$delete(this.data.launchConfig.labels,key)          
+        }else{
+          this.labnum++
+          this.$set(this.data.launchConfig.labels,this.labnum,'value')
+        }        
+      },
+      addvolum(type,key){
+        if(type==='del'){
+          this.$delete(this.data.launchConfig.dataVolumes,key)          
+        }else{
+         
+          this.$set(this.data.launchConfig.dataVolumes,this.data.launchConfig.dataVolumes.length,'')
+        }        
+      },
+
+    },
+    watch:{
+       'data.launchConfig.image':function(n,o){
+        this.data.launchConfig.imageUuid='docker:'+ this.data.launchConfig.image           
       }
+    },
+    created(){
+      this.getinfo()
     }
   }
 </script>
@@ -456,13 +488,13 @@
 .box {
   padding: 32px;
   background-color: rgb(240, 242, 245);
+
+}
   .chart-wrapper {
     background: #fff;
     padding: 16px 16px 0;
     margin-bottom: 32px;
   }
-}
-
 .box-row{
   background:#fff;
   padding:20px 20px;
