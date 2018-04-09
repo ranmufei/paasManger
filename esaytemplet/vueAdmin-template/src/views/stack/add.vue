@@ -1,23 +1,26 @@
 <template>
 <div class="box">
  <el-row class="box-row">
-<el-form :model="data"  :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+ 
+  <el-form :model="data"  :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+  
   <el-form-item label="名称" prop="name">
     <el-input v-model="data.name"></el-input>
   </el-form-item>
 
 
-  <el-form-item label="镜像" prop="name">
-    <el-input v-model="data.launchConfig.image"></el-input>
+  <el-form-item label="镜像" prop="image">
+    <el-input v-model="data.image"></el-input>
   </el-form-item>
 
-<!--   <el-form-item  prop="type">
-
-  <el-checkbox-group v-model="data.launchConfig['labels.io.rancher.container.pull_image']">
-      <el-checkbox label="创建前拉取镜像" name="type" ></el-checkbox>      
-  </el-checkbox-group>
-
-</el-form-item> -->
+  <el-form-item  label="容器运行主机" >
+     <el-select v-model="data.launchConfig.requestedHostId" placeholder="请选容器运行主机"　style="margin-left:5px ; ">
+         <el-option  v-for="(item,key) in hostlist" :labels="item.name"  :key="item.name" :value="item.id">
+             <span style="float: left">{{item.name}}</span>
+             <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
+         </el-option>
+    </el-select>
+  </el-form-item>
 
   <el-form-item label="运行数量" prop="delivery">
     <el-slider v-model="data.scale"></el-slider>
@@ -228,23 +231,7 @@
 
 
       </el-tab-pane>
-      <el-tab-pane label="调度">
-
-       <el-form-item label="容器运行主机" prop="cmd">
-            
-                <el-col :span="20">
-                     <el-select v-model="data.launchConfig.requestedHostId" placeholder="请选容器运行主机"　style="margin-left:5px ; ">
-                     <el-option  v-for="(item,key) in hostlist" :labels="item.name"  :key="item.name" :value="item.id">
-                         <span style="float: left">{{item.name}}</span>
-                         <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
-
-                     </el-option>
-                    </el-select>
-                </el-col>
-
-          </el-form-item>
-
-      </el-tab-pane>
+    
     </el-tabs>
   </el-form-item>
   
@@ -268,6 +255,7 @@ import { getservice,hosts} from '@/api/paasApi'
             "assignServiceIpAddress": false,
             "startOnCreate": true,
             "type": "service",
+            "image": '',
             "environmentId": this.$route.query.environmentId,
             "launchConfig": {
               "kind": "container",
@@ -286,10 +274,9 @@ import { getservice,hosts} from '@/api/paasApi'
               "restartPolicy": {
                 "name": "always"
               },
-              "imageUuid": '',
-              "image": '',
-              "ports": ["8081:80/tcp", "8082:88/tcp"],
-              "dataVolumes": ["/home/www/data:/data"],
+              "imageUuid": '',              
+              "ports": [],
+              "dataVolumes": [],
               "dataVolumesFrom": [],
               "dns": [],
               "dnsSearch": [],
@@ -302,11 +289,9 @@ import { getservice,hosts} from '@/api/paasApi'
               },
               "dataVolumesFromLaunchConfigs": [],
               "requestedHostId": "1h6",
-              "command": ["echo", "helo"],
+              "command": [],
               "entryPoint":null,
-              "environment": {
-               
-              },
+              "environment": {},
               "count": null,
               "cpuSet": null,
               "cpuShares": null,
@@ -335,8 +320,8 @@ import { getservice,hosts} from '@/api/paasApi'
               "networkLaunchConfig": null
             },
             "secondaryLaunchConfigs": [],
-            "name": "testnginx",
-            "description": "content test",
+            "name": "",
+            "description": "",
             "createIndex": null,
             "created": null,
             "externalId": null,
@@ -348,9 +333,7 @@ import { getservice,hosts} from '@/api/paasApi'
             "uuid": null,
             "vip": null,
             "fqdn": null,
-             "ports":[
-              {'wport':90,'nport':90,'tcp':'tcp'}
-             ]
+             "ports":[]
           },
           "service":null,
           "servicelink":[{"name":"nginx222","serviceId":"1s47"}]   ,
@@ -359,8 +342,8 @@ import { getservice,hosts} from '@/api/paasApi'
            "envnum":0,
            "labnum":0,
            "networkMode":['Managed','Bridge','Host','None'] ,
-           "hostlist":null,
-        ruleForm: {
+           "hostlist":null,      
+         ruleForm: {
           name: '',
           region: '',
           date1: '',
@@ -368,16 +351,16 @@ import { getservice,hosts} from '@/api/paasApi'
           delivery: false,
           type: [],
           resource: '',
-          desc: '',
-          value1:2
+          desc: ''
         },
         rules: {
           name: [
             { required: true, message: '请输入服务名称', trigger: 'blur' },
-            { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+            { min: 3, max: 20, message: '长度在 3 到 5 个字符', trigger: 'blur' }
           ],
-          region: [
-            { required: true, message: '请选择活动区域', trigger: 'change' }
+          image: [
+            { required: true, message: '请输入镜像地址', trigger: 'blur' },
+            { min: 3, max: 100, message: '长度在 3 到 100 个字符', trigger: 'blur' }
           ],
           date1: [
             { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
@@ -401,10 +384,11 @@ import { getservice,hosts} from '@/api/paasApi'
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            alert('submit!');
+            //alert('submit!');
+            console.log('data=>',this.data)
           } else {
             console.log('error submit!!');
-            return false;
+            //return false;
           }
         });
       },
@@ -420,18 +404,15 @@ import { getservice,hosts} from '@/api/paasApi'
           this.$delete(this.data.ports,index)          
         }else{
            this.$set(this.data.ports,this.data.ports.length, {'wport':90,'nport':90,'tcp':'tcp'})
-           //let portvalue =  this.data.ports[data.ports.length]['wport']+':'+this.data.ports[data.ports.length]['nport']+"/"+this.data.ports[data.ports.length]['tcp']
+           let portvalue =  this.data.ports[data.ports.length]['wport']+':'+this.data.ports[data.ports.length]['nport']+"/"+this.data.ports[data.ports.length]['tcp']
            //this.$set(this.data.launchConfig.ports,this.data.ports.length,portvalue)
 
-        }
-       
+        }       
       },
-
       getinfo(){
         getservice().then(response=>{
             this.service=response.data
-        },function(){
-
+            },function(){
         })
 
         hosts().then(response=>{
@@ -474,8 +455,8 @@ import { getservice,hosts} from '@/api/paasApi'
 
     },
     watch:{
-       'data.launchConfig.image':function(n,o){
-        this.data.launchConfig.imageUuid='docker:'+ this.data.launchConfig.image           
+       'data.image':function(n,o){
+        this.data.launchConfig.imageUuid='docker:'+ this.data.image           
       }
     },
     created(){
