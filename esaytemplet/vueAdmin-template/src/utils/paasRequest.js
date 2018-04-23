@@ -6,9 +6,9 @@ import Cookies from 'js-cookie'
 
 // 创建axios实例
 const service = axios.create({
-  baseURL:'http://192.168.1.4:9528' ,//process.env.BASE_API, // api的base_url
+  baseURL:'http://localhost:9528' ,//process.env.BASE_API, // api的base_url
   timeout: 15000, // 请求超时时间headers: {'x-api-csrf':Cookies.get('CSRF')},
-  headers:{"Accept": "application/json",'x-api-csrf':Cookies.get('CSRF')},  
+  headers:{"Accept": "application/json",'x-api-csrf':Cookies.get('CSRF')},
    auth: {
         username: 'CA536FF6119B49B21403',
         password: 'z5KLJ5RVH9gqzL5rrZw45G5LdKP9r5GeFpNAV6ZT'
@@ -19,14 +19,14 @@ const service = axios.create({
 service.interceptors.request.use(config => {
   if (store.getters.token) {
     config.headers['X-Token'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
-    config.headers['Accept'] ="application/json" 
+    config.headers['Accept'] ="application/json"
     config.headers['auth'] ={
         username: 'CA536FF6119B49B21403',
         password: 'z5KLJ5RVH9gqzL5rrZw45G5LdKP9r5GeFpNAV6ZT'
     }
-  
-    //headers: {'Authorization': 'CA536FF6119B49B21403:z5KLJ5RVH9gqzL5rrZw45G5LdKP9r5GeFpNAV6ZT---'},   
-  
+
+    //headers: {'Authorization': 'CA536FF6119B49B21403:z5KLJ5RVH9gqzL5rrZw45G5LdKP9r5GeFpNAV6ZT---'},
+
   }
 
   return config
