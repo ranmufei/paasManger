@@ -2,7 +2,10 @@
 <div >
   <el-card class="box-card"  v-for="value in hostlists">
     <div slot="header" class="clearfix">
-      <span ><svg-icon icon-class="pc"  class="hosttitle" />  {{value.name?value.name:value.hostname}}</span>
+      <span ><svg-icon icon-class="pc"  class="hosttitle" />
+       
+          <router-link :to="{ path: '/host/hostinfo',query: { hostid: value.id }}"> {{value.name?value.name:value.hostname}}</router-link>
+        </span>
     
        <el-dropdown style="float: right; padding: 3px 0; cursor:pointer;">
           <el-button type="success" size="mini" v-if="value.state=='active'">
@@ -20,14 +23,26 @@
             
 
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item> <span v-if="value.state=='inactive'" @click="starthost(value.id)">开启</span><span v-else @click="stophost(value.id)"> 停用</span></el-dropdown-item>
+
+            <span v-if="value.state=='inactive'">
+                <el-dropdown-item > 
+                    <span @click="starthost(value.id)">开启</span>                 
+                </el-dropdown-item>
+                 <el-dropdown-item > <span @click="deletehost(value.id)">删除</span> </el-dropdown-item>
+            </span>
+            <span v-else> 
+                <el-dropdown-item> <span @click="stophost(value.id)">停用</span> </el-dropdown-item>
+            </span>
+            
+
             <el-dropdown-item > <span @click="hostinfo(value.id)">编辑</span> </el-dropdown-item>
+            
           </el-dropdown-menu>
         </el-dropdown>
 
     </div>
    <div  class="text item  font-text"   >
-    <i class="el-icon-share"></i><span>{{value.ip}}</span>  |       
+    <i class="el-icon-share"></i><span>{{value.ipAddresses[0].address}}</span>  |       
     <svg-icon icon-class="docker" /><span> docker 版本：{{value.labels['io.rancher.host.docker_version']}} | 内核版本:{{value.labels['io.rancher.host.linux_kernel_version']}} </span>  
 </div>
  
@@ -64,7 +79,7 @@
 </template>
 
 <script>
-import { hosts,hostIP,stophost,starthost } from '@/api/paasApi'
+import { hosts,hostIP,stophost,starthost,delhost } from '@/api/paasApi'
 import  edithost from '@/views/host/edithost'
 
 export default {
@@ -93,7 +108,7 @@ export default {
 
                 console.log('index',index)
                 data[index]=value
-                data[index]['ip']=this.getIp(value['id'],index)
+                //data[index]['ip']=this.getIp(value['id'],index)
 
                  //data[index]['disknum']=(value['info']['diskInfo']['mountPoints']['/dev/vda1']['total']?value['info']['diskInfo']['mountPoints']['/dev/vda1']['total']:0)/1024 
 
@@ -163,6 +178,33 @@ export default {
       },function(){
 
       })
+     },
+     deletehost(hid){
+
+     
+              this.$confirm('此操作将永久删除该主机, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                    
+                    delhost(hid).then(response=>{
+                          if(response.type){
+                            this.hostlist()
+                          }
+                      },function(){
+
+                      })
+
+
+              }).catch(() => {
+                  return false       
+              });
+         
+
+        
+
+
      }
   }
 }

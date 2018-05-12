@@ -2,8 +2,8 @@
   "name": "vue-admin-template",
   "version": "3.0.0",
   "license": "MIT",
-  "description": "A vue admin template with Element UI & axios & iconfont & permission control & lint",
-  "author": "Pan <panfree23@gmail.com>",
+  "description": "this is a PAAS mamage",
+  "author": "Pan <ranmufei@qq.com>",
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
@@ -14,13 +14,19 @@
   },
   "dependencies": {
     "axios": "0.17.1",
+    "echarts": "^4.0.4",
     "element-ui": "2.0.8",
     "js-cookie": "2.2.0",
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",
+    "socket.io": "^2.1.0",
+    "terminal-kit": "^1.15.1",
     "vue": "2.5.10",
     "vue-router": "3.0.1",
-    "vuex": "3.0.1"
+    "vue-socket.io": "^2.1.1-b",
+    "vue-websocket": "^0.2.2",
+    "vuex": "3.0.1",
+    "xterm": "^3.3.0"
   },
   "devDependencies": {
     "autoprefixer": "7.2.3",

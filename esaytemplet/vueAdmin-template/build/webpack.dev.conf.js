@@ -37,11 +37,12 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       : false,
     publicPath: config.dev.assetsPublicPath,   
     proxy: {
-        "/v1": {
+        "/v1/*": {
           target: "http://phpmyadmin.test.03in.com:8080",
           secure: false,
-          changeOrigin: true,
-        }
+          changeOrigin: true,         
+        },
+       
       },
     quiet: true, // necessary for FriendlyErrorsPlugin
     watchOptions: {

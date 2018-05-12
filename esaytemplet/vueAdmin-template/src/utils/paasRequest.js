@@ -6,12 +6,13 @@ import Cookies from 'js-cookie'
 
 // 创建axios实例
 const service = axios.create({
-  baseURL:'http://localhost:9528' ,//process.env.BASE_API, // api的base_url
+  //baseURL:'http://localhost:9528' ,//process.env.BASE_API, // api的base_url
+  baseURL:'/' ,//process.env.BASE_API, // api的base_url
   timeout: 15000, // 请求超时时间headers: {'x-api-csrf':Cookies.get('CSRF')},
   headers:{"Accept": "application/json",'x-api-csrf':Cookies.get('CSRF')},
    auth: {
-        username: 'CA536FF6119B49B21403',
-        password: 'z5KLJ5RVH9gqzL5rrZw45G5LdKP9r5GeFpNAV6ZT'
+        username: '10EC0CD9A2EC432127F1',
+        password: 'oJdxGyThiHeQT1xZWvdz5bHHPTENqLRQt6CmLTYA'
     },
 })
 

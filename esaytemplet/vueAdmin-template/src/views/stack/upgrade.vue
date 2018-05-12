@@ -4,9 +4,7 @@
 
   <el-form :model="data"  :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
 
-  <el-form-item label="名称" prop="name">
-    <el-input v-model="data.name" placeholder="只能用英文字母，不能用中文"></el-input>
-  </el-form-item>
+
 
 
   <el-form-item label="镜像" prop="image">
@@ -16,14 +14,15 @@
   <el-form-item  label="容器运行主机" >
      <el-select v-model="data.launchConfig.requestedHostId" placeholder="请选容器运行主机"　style="margin-left:5px ; ">
          <el-option  v-for="(item,key) in hostlist" :labels="item.name"  :key="item.name" :value="item.id">
-             <span style="float: left">{{item.name||item.hostname}}</span>
+             <span style="float: left">{{item.name}}</span>
              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
          </el-option>
     </el-select>
   </el-form-item>
 
   <el-form-item label="运行数量" prop="delivery">
-    <el-slider v-model="data.scale"></el-slider>
+   
+     <el-input-number v-model="updata.inServiceStrategy.batchSize" controls-position="right"  :min="1" :max="10"></el-input-number>
   </el-form-item>
 
   <el-form-item label="描述" prop="desc2">
@@ -33,7 +32,9 @@
   <el-form-item label=" " prop="desc2">
       <el-col :span="12">
 
-        <el-row><el-button  size="mini" icon="el-icon-circle-plus" circle @click="addport('add',0)">端口映射</el-button></el-row>
+        <el-row>
+        <el-button  size="mini" icon="el-icon-circle-plus" circle @click="addport('add',0)">端口映射</el-button>
+        </el-row>
 
        <el-col :span="6">
           <span class="padding-left10">外部端口</span>
@@ -47,22 +48,24 @@
           <span class="padding-left10">协议</span>
         </el-col>
 
-       <el-row class="marin" v-for="(item,key) in data.ports">
-            <el-col :span="6">
-              <el-input placeholder="例如：80" v-model="item.wport"  auto-complete="off" ></el-input>
+       <el-row class="marin" v-for="(item,key) in ports">
+
+            <el-col :span="6"> <el-input  placeholder="例如:8080" v-model="item.nport"></el-input>
+              
             </el-col>
             <el-col class="line" :span="1" style="padding-left:5px">-</el-col>
             <el-col :span="6">
-                 <el-input  placeholder="例如:8080" v-model="item.nport"></el-input>
+                <el-input placeholder="例如：80" v-model="item.wport"  auto-complete="off" ></el-input>
             </el-col>
             <el-col class="line" :span="1" style="padding-left:5px">/</el-col>
             <el-col :span="6">
                  <el-select v-model="item.tcp" placeholder="请选协议">
-                  <el-option label="tcp" value="tcp" selected="selected"></el-option>
-                  <el-option label="udp" value="udp"></el-option>
+                    <el-option label="tcp" value="tcp" selected="selected"></el-option>
+                    <el-option label="udp" value="udp"></el-option>
                 </el-select>
             </el-col>
             <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click="addport('del',key)"></i>   </el-col>
+
         </el-row>
 
   </el-col>
@@ -245,11 +248,20 @@
 </template>
 <script>
 
-import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
+import { getservice,hosts,addServer,addlinkcontainer,containerManger,getlinkservice,linkmap} from '@/api/paasApi'
 
   export default {
     data() {
       return {
+        updata:{
+              "inServiceStrategy": {
+                  "batchSize": 1,
+                  "intervalMillis": 2000,
+                  "startFirst": false,
+                  "launchConfig":null, //this.data.launchConfig,
+                  "secondaryLaunchConfigs": []
+              }
+        },
         data:{
             "scale": 1,
             "assignServiceIpAddress": false,
@@ -333,11 +345,14 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
             "uuid": null,
             "vip": null,
             "fqdn": null,
-             "ports":[]
+            
           },
+          "hostname":null,
+          "ports":[],
           "service":null,
           "servicelink":[{"name":"nginx222","serviceId":"1s47"}]   ,
            "link":[],
+           "linkmap":null,
            "env":{},
            "envnum":0,
            "labnum":0,
@@ -402,13 +417,13 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
               background: 'rgba(0, 0, 0, 0.7)'
             });
 
-
-            addServer(this.data).then(response=>{
+            //更新升级
+            this.objlink();// 拼接对象
+            containerManger(this.$route.query.serviceId,6,this.updata).then(response=>{
               console.log('提交数据：》',response)
               if(response.type=='service'){
                   this.add_link(response.id)
                   loading.close()
-                  //window.location.href="#/stack/index"
                   window.location.href="#/stack/stackinfo?environmentId="+this.$route.query.environmentId
               }
             },function(er){
@@ -430,11 +445,12 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
       },
       addport(type,index){
         if(type=='del'){
-          this.$delete(this.data.ports,index)
+          this.$delete(this.ports,index)
           this.$delete(this.data.launchConfig.ports,index)
         }else{
-           this.$set(this.data.ports,this.data.ports.length, {'wport':90,'nport':90,'tcp':'tcp'})
-          
+           this.$set(this.ports,this.ports.length, {'wport':90,'nport':90,'tcp':'tcp'})
+           //let portvalue =  this.data.ports[data.ports.length]['wport']+':'+this.data.ports[data.ports.length]['nport']+"/"+this.data.ports[data.ports.length]['tcp']
+           //this.$set(this.data.launchConfig.ports,this.data.ports.length,portvalue)
 
         }
       },
@@ -498,13 +514,87 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
         },function(err){
           console.log('err',err)
         })
-      }
+      },
+      clonedata(sid){
+
+          this.linkmaps() // 获取全部链接关系
+          this.setlink(sid) // 筛选当前服务的 链接
+
+          containerManger(sid,0).then(response=>{
+            this.data.name=response.name
+            this.data.image=response.launchConfig.imageUuid.replace(/docker:/, "")
+            this.data.scale=response.scale
+            this.data.description=response.description
+            this.data.launchConfig.dataVolumes=response.launchConfig.dataVolumes
+            this.data.launchConfig.requestedHostId=response.launchConfig.requestedHostId
+            //this.envlist=response.launchConfig.environment
+
+           // this.ports=response.launchConfig.ports
+            let port=response.launchConfig.ports              
+              for (var i = 0; i < port.length; i++) {
+                 let parr=[];
+                 parr=port[i].split(":");
+               /*  console.log('1',parr)
+                 console.log('2',parr[0])
+                 console.log('3',parr[1].slice(0,-4))
+                 console.log('4',parr[1].slice(-3)) */
+                 this.ports.push({"nport":parr[0],"wport":parr[1].slice(0,-4),"tcp":parr[1].slice(-3)})
+              }
+               let envarr=response.launchConfig.environment
+               for(let x in envarr ){
+                 console.log('x',x,envarr[x])
+                 this.envlist.push({"k":x,"v":envarr[x]})
+               }
+
+               let lab=response.launchConfig.labels
+               for(let x in lab ){
+                 console.log('x',x,lab[x])
+                 this.labels.push({"k":x,"v":lab[x]})
+               }
+
+
+          },function(err){
+            console.log('err',err)
+          })
+      },
+      objlink(){
+        // 对象拼接 
+        //this.updata.inServiceStrategy.launchConfig=
+        this.$set(this.updata.inServiceStrategy,'launchConfig',this.data.launchConfig)
+      },
+      linkmaps(){
+        linkmap().then(response=>{
+          this.linkmap=response.data
+        },function(err){
+          console.log('error',err)
+        })
+      },
+      setlink(sid){
+        // 获取已经存在链接关系
+        getlinkservice(sid).then(response=>{
+            console.log('data1111;',response.data)
+            let data=response.data
+            let sarr=[]
+            for (var i = 0; i < data.length; i++) {
+                sarr.push(data[i].id)
+                let linkname=''
+                this.linkmap.findIndex(function(value, index, arr) {
+                  if(value.consumedServiceId===data[i].id){ linkname=value.name }                  
+                })
+                this.link.push({'serviceId':data[i].id,'name':linkname})
+            }
+            console.log(sarr)
+            console.log(this.link)
+        },function(){
+
+        })
+      },
     },
     watch:{
       'data.image':function(n,o){
         this.data.launchConfig.imageUuid='docker:'+ this.data.image
       },
-      'data.ports':{
+      'ports':{
           handler:function(val,oldv){
             for(let x in val){
 
@@ -558,11 +648,19 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
             console.log(this.serviceLinks)
           },
           deep:true
+      },
+      'hostname':{
+          handler:function(val,oldv){
+            //  this.data.launchConfig.requestedHostId=this.link
+            //console.log(this.serviceLinks)
+          },
+          deep:true
       }
 
     },
     created(){
       this.getinfo()
+      this.clonedata(this.$route.query.serviceId)
     }
   }
 </script>

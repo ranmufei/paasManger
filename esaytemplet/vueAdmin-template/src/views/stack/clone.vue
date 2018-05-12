@@ -16,7 +16,7 @@
   <el-form-item  label="容器运行主机" >
      <el-select v-model="data.launchConfig.requestedHostId" placeholder="请选容器运行主机"　style="margin-left:5px ; ">
          <el-option  v-for="(item,key) in hostlist" :labels="item.name"  :key="item.name" :value="item.id">
-             <span style="float: left">{{item.name||item.hostname}}</span>
+             <span style="float: left">{{item.name}}</span>
              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
          </el-option>
     </el-select>
@@ -47,7 +47,8 @@
           <span class="padding-left10">协议</span>
         </el-col>
 
-       <el-row class="marin" v-for="(item,key) in data.ports">
+       <el-row class="marin" v-for="(item,key) in ports">
+
             <el-col :span="6">
               <el-input placeholder="例如：80" v-model="item.wport"  auto-complete="off" ></el-input>
             </el-col>
@@ -58,11 +59,12 @@
             <el-col class="line" :span="1" style="padding-left:5px">/</el-col>
             <el-col :span="6">
                  <el-select v-model="item.tcp" placeholder="请选协议">
-                  <el-option label="tcp" value="tcp" selected="selected"></el-option>
-                  <el-option label="udp" value="udp"></el-option>
+                    <el-option label="tcp" value="tcp" selected="selected"></el-option>
+                    <el-option label="udp" value="udp"></el-option>
                 </el-select>
             </el-col>
             <el-col class="line" :span="2" style="padding-left:5px ; color:red; cursor: pointer;">  <i class="el-icon-circle-close" @click="addport('del',key)"></i>   </el-col>
+
         </el-row>
 
   </el-col>
@@ -245,7 +247,7 @@
 </template>
 <script>
 
-import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
+import { getservice,hosts,addServer,addlinkcontainer,containerManger} from '@/api/paasApi'
 
   export default {
     data() {
@@ -333,8 +335,10 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
             "uuid": null,
             "vip": null,
             "fqdn": null,
-             "ports":[]
+            
           },
+          "hostname":null,
+          "ports":[],
           "service":null,
           "servicelink":[{"name":"nginx222","serviceId":"1s47"}]   ,
            "link":[],
@@ -408,7 +412,6 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
               if(response.type=='service'){
                   this.add_link(response.id)
                   loading.close()
-                  //window.location.href="#/stack/index"
                   window.location.href="#/stack/stackinfo?environmentId="+this.$route.query.environmentId
               }
             },function(er){
@@ -430,11 +433,12 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
       },
       addport(type,index){
         if(type=='del'){
-          this.$delete(this.data.ports,index)
+          this.$delete(this.ports,index)
           this.$delete(this.data.launchConfig.ports,index)
         }else{
-           this.$set(this.data.ports,this.data.ports.length, {'wport':90,'nport':90,'tcp':'tcp'})
-          
+           this.$set(this.ports,this.ports.length, {'wport':90,'nport':90,'tcp':'tcp'})
+           //let portvalue =  this.data.ports[data.ports.length]['wport']+':'+this.data.ports[data.ports.length]['nport']+"/"+this.data.ports[data.ports.length]['tcp']
+           //this.$set(this.data.launchConfig.ports,this.data.ports.length,portvalue)
 
         }
       },
@@ -498,13 +502,51 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
         },function(err){
           console.log('err',err)
         })
+      },
+      clonedata(sid){
+          containerManger(sid,0).then(response=>{
+            this.data.name=response.name
+            this.data.image=response.launchConfig.imageUuid.replace(/docker:/, "")
+            this.data.scale=response.scale
+            this.data.description=response.description
+            this.data.launchConfig.dataVolumes=response.launchConfig.dataVolumes
+            this.data.launchConfig.requestedHostId=response.launchConfig.requestedHostId
+            //this.envlist=response.launchConfig.environment
+
+           // this.ports=response.launchConfig.ports
+            let port=response.launchConfig.ports              
+              for (var i = 0; i < port.length; i++) {
+                 let parr=[];
+                 parr=port[i].split(":");
+               /*  console.log('1',parr)
+                 console.log('2',parr[0])
+                 console.log('3',parr[1].slice(0,-4))
+                 console.log('4',parr[1].slice(-3)) */
+                 this.ports.push({"nport":parr[0],"wport":parr[1].slice(0,-4),"tcp":parr[1].slice(-3)})
+              }
+               let envarr=response.launchConfig.environment
+               for(let x in envarr ){
+                 console.log('x',x,envarr[x])
+                 this.envlist.push({"k":x,"v":envarr[x]})
+               }
+
+               let lab=response.launchConfig.labels
+               for(let x in lab ){
+                 console.log('x',x,lab[x])
+                 this.labels.push({"k":x,"v":lab[x]})
+               }
+
+
+          },function(err){
+            console.log('err',err)
+          })
       }
     },
     watch:{
       'data.image':function(n,o){
         this.data.launchConfig.imageUuid='docker:'+ this.data.image
       },
-      'data.ports':{
+      'ports':{
           handler:function(val,oldv){
             for(let x in val){
 
@@ -558,11 +600,19 @@ import { getservice,hosts,addServer,addlinkcontainer} from '@/api/paasApi'
             console.log(this.serviceLinks)
           },
           deep:true
+      },
+      'hostname':{
+          handler:function(val,oldv){
+          //  this.data.launchConfig.requestedHostId=this.link
+            //console.log(this.serviceLinks)
+          },
+          deep:true
       }
 
     },
     created(){
       this.getinfo()
+      this.clonedata(this.$route.query.serviceId)
     }
   }
 </script>

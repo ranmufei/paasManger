@@ -27,12 +27,16 @@ const user = {
   actions: {
     // 登录
     Login({ commit }, userInfo) {
+      console.log('Login:',commit,userInfo)
       const username = userInfo.username.trim()
       return new Promise((resolve, reject) => {
         login(username, userInfo.password).then(response => {
           const data = response.data
-          setToken(data.token)
-          commit('SET_TOKEN', data.token)
+          console.log('login ,',response.jwt)
+          //setToken(data.token)
+          setToken(response.jwt)
+          //commit('SET_TOKEN', data.token)
+          commit('SET_TOKEN', response.jwt)
           resolve()
         }).catch(error => {
           reject(error)
@@ -45,9 +49,14 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo(state.token).then(response => {
           const data = response.data
-          commit('SET_ROLES', data.roles)
+         /* commit('SET_ROLES', data.roles)
           commit('SET_NAME', data.name)
-          commit('SET_AVATAR', data.avatar)
+          commit('SET_AVATAR', data.avatar)*/
+           
+          commit('SET_ROLES', ["admin"])
+          commit('SET_NAME', "admin")
+          commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
+
           resolve(response)
         }).catch(error => {
           reject(error)

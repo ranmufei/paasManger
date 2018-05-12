@@ -12,7 +12,8 @@
                 <i class="el-icon-remove icon" v-else></i>
 
                 </el-button> 
-                <span class="stackname">{{data.name}} </span>        
+                <span class="stackname titletxt"><router-link :to="{ path: '/stack/stackinfo',query: { environmentId: data.id }}" >{{data.name}} </router-link></span>        
+                <span class="stackdes">{{data.description}} </span>        
         </el-col>
         
         
@@ -24,23 +25,28 @@
         </el-col>
 
 
-        <el-col :span="5">                      
+        <el-col :span="5" class="f-right">                      
               <span class="stackname">
                   <el-dropdown split-button size="" type="primary" @click="addservice" trigger="click">
                     <router-link :to="{ path: '/stack/add',query: { environmentId: data.id }}" >添加服务</router-link>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item><i class="el-icon-plus icon"></i> <router-link to="/stack/add">添加服务</router-link> </el-dropdown-item>
-                      <el-dropdown-item><i class="icon"><svg-icon icon-class="jh"  /></i>   添加负载均衡</el-dropdown-item>
+                      <el-dropdown-item><i class="el-icon-plus icon"></i> 
+<router-link :to="{ path: '/stack/add',query: { environmentId: data.id }}" >添加服务</router-link>
+                     
+                      </el-dropdown-item>
+                      <el-dropdown-item><i class="icon"><svg-icon icon-class="jh"  /></i> 
+                        
+<router-link :to="{ path: '/stack/addlb',query: { environmentId: data.id }}" >添加负载均衡</router-link>
+                        </el-dropdown-item>
                      
                     </el-dropdown-menu>
                   </el-dropdown>  
               </span>        
         </el-col>
 
-        <el-col :span="5">                      
+        <!-- <el-col :span="5">                      
               <span class="stackname f-right padding10">
-           
-
+          
                   <el-button type="text"><svg-icon icon-class="stop2"  /></el-button>
                   <el-dropdown trigger="click">
                  
@@ -54,16 +60,17 @@
                     
                   </el-dropdown-menu>
                 </el-dropdown>
-
+        
               </span>        
-        </el-col>
+        </el-col> -->
 
       </div>
 
        <el-col :span="24"  v-show="data.tab?data.tab:false">       
                 <el-table
                 :data="data['contianer']"
-                style="width: 100%; "               
+                style="width: 100%; "    
+                v-loading="loading"           
                 >
                 <el-table-column
                   label="状态"
@@ -80,6 +87,9 @@
                   prop="name"
                   label="服务名称"
                   >
+                  <template slot-scope="scope">
+                    <router-link :to="{ path: '/stack/serviceinfo',query: {'services':scope.row.id}}" class="colorlink titletxt">{{scope.row.name}}</router-link>
+                  </template>
                 </el-table-column>
                 <el-table-column
                   prop="instances[0].imageUuid"
@@ -89,37 +99,7 @@
                   prop="currentScale"
                   label="容器数">
                 </el-table-column>
-                <el-table-column                  
-                  label="管理">
-  
-
-                  <template slot-scope="scope">
-                      
-                    <span class="stackname f-right padding10">
-           
-
-                  <el-button type="text"><svg-icon icon-class="stop2"  /></el-button>
-                  <el-dropdown trigger="click">
-                 
-                  <span class="el-dropdown-link">                  
-                      <el-button type="text"><i class="el-icon-more el-icon--right"></i></el-button>                    
-                  </span>
-                  <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item><svg-icon icon-class="stop2"  />  启动</el-dropdown-item>
-                    <el-dropdown-item><i class="el-icon-tickets"></i> 重启</el-dropdown-item>
-                    <el-dropdown-item><i class="el-icon-edit-outline"></i> 删除</el-dropdown-item>
-                    <el-dropdown-item><i class="el-icon-edit-outline"></i> 编辑</el-dropdown-item>
-                    <el-dropdown-item><i class="el-icon-edit-outline"></i> 克隆</el-dropdown-item>
-                    
-                  </el-dropdown-menu>
-                </el-dropdown>
-
-              </span>  
-
-                 </template>
-
-
-                </el-table-column>
+                
               </el-table>       
        </el-col>
         </div>
@@ -138,11 +118,14 @@ export default {
   },
   data() {
     return {
+      loading:false,
       stack:{},
     }
   },
  created() {
    this.getstack()
+
+
   },
   methods: {
         getstack(){
@@ -156,17 +139,19 @@ export default {
 
        },
        stackcontianer(envid,index){
-        getstackContainer(envid).then(response=>{
-            //this.stack[index]['contianer']=response.data
-            this.$set(this.stack[index],'contianer',response.data)
-            if(this.stack[index]['tab']===true){
-              this.$set(this.stack[index],'tab',false)
-              
+          this.loading=true
+         if(this.stack[index]['tab']===true){
+              this.$set(this.stack[index],'tab',false)              
             }else{
               this.$set(this.stack[index],'tab',true)
               
             }
-            
+
+        getstackContainer(envid).then(response=>{
+            //this.stack[index]['contianer']=response.data
+            this.$set(this.stack[index],'contianer',response.data)
+           
+            this.loading=false
         },function(){
 
         })
@@ -190,6 +175,11 @@ export default {
   height: 60px;
   line-height: 60px;
   color:#304156;
+}
+.stackdes{
+  height: 30px;
+  line-height: 30px;
+  color:#999;
 }
 .stackbox{  
   background:#fff;
@@ -224,6 +214,10 @@ export default {
 }
 .orange{
   color: orange
+}
+
+.titletxt{
+  color:#329EFF
 }
 
 </style>

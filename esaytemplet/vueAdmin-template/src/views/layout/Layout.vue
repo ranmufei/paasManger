@@ -1,7 +1,7 @@
 <template>
   <div class="app-wrapper" :class="{hideSidebar:!sidebar.opened}">
     <sidebar class="sidebar-container"></sidebar>
-    <div class="main-container">
+    <div class="main-container box">
       <navbar></navbar>
       <app-main></app-main>
     </div>
@@ -33,5 +33,8 @@ export default {
   position: relative;
   height: 100%;
   width: 100%;
+}
+.box{
+  background: #F0F2F5;
 }
 </style>

@@ -37,11 +37,7 @@ export default {
   name: 'login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!isvalidUsername(value)) {
-        callback(new Error('请输入正确的用户名'))
-      } else {
-        callback()
-      }
+     
     }
     const validatePass = (rule, value, callback) => {
       if (value.length < 5) {
@@ -56,8 +52,7 @@ export default {
         password: 'admin'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePass }]
+     
       },
       loading: false,
       pwdType: 'password'
@@ -73,12 +68,18 @@ export default {
     },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
+        console.log('dddd1')
         if (valid) {
+              console.log('dddd2')
           this.loading = true
           this.$store.dispatch('Login', this.loginForm).then(() => {
+
+              console.log('dddd3')
+
             this.loading = false
             this.$router.push({ path: '/' })
           }).catch(() => {
+            console.log('dddd4')
             this.loading = false
           })
         } else {

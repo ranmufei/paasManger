@@ -24,7 +24,7 @@ import Layout from '../views/layout/Layout'
 export const constantRouterMap = [
   { path: '/login', component: () => import('@/views/login/index'), hidden: true },
   { path: '/404', component: () => import('@/views/404'), hidden: true },
-
+  
   {
     path: '/',
     component: Layout,
@@ -49,10 +49,59 @@ export const constantRouterMap = [
         meta: { title: '微服务', icon: 'sitemap' }
       },
       {
+        path: 'addstack',
+        name: '新增组',
+        component: () => import('@/views/stack/addstack'),
+        meta: { title: '新增组', icon: 'add' }
+      },
+      {
         path: 'add',
-        name: '新增微服务',
+        name: '开容器',
+        hidden:true,
         component: () => import('@/views/stack/add'),
-        meta: { title: '新增微服务', icon: 'sitemap' }
+        meta: { title: '开容器', icon: 'sitemap' }
+      }, 
+      {
+        path: 'stackinfo',
+        name: '微服务组',
+        hidden:true,
+        component: () => import('@/views/stack/stackinfo'),
+        meta: { title: '微服务组', icon: 'sitemap' }
+      },
+      {
+        path: 'clone',
+        name: '复制容器',
+        hidden:true,
+        component: () => import('@/views/stack/clone'),
+        meta: { title: '复制容器', icon: 'sitemap' }
+      },
+      {
+        path: 'addlb',
+        name: '添加负载均衡',
+        hidden:true,
+        component: () => import('@/views/stack/addlb'),
+        meta: { title: '添加负载均衡', icon: 'sitemap' }
+      },
+      {
+        path: 'serviceinfo',
+        name: '容器详细',
+        hidden:true,
+        component: () => import('@/views/stack/serviceinfo'),
+        meta: { title: '容器详细', icon: 'sitemap' }
+      },
+      {
+        path: 'upgrade',
+        name: '容器升级',
+        hidden:true,
+        component: () => import('@/views/stack/upgrade'),
+        meta: { title: '容器详细', icon: 'sitemap' }
+      },
+      {
+        path: 'editlb',
+        name: '编辑负载',
+        hidden:true,
+        component: () => import('@/views/stack/components/editlb'),
+        meta: { title: '容器详细', icon: 'sitemap' }
       }
     ]
   },
@@ -70,8 +119,22 @@ export const constantRouterMap = [
        {
         path: 'containers',
         name: '容器管理',
+        hidden:true,
         component: () => import('@/views/host/containers'),
         meta: { title: '容器管理', icon: 'containerservice' }
+      },
+      {
+        path: 'addhost',
+        name: '注册主机',
+        component: () => import('@/views/host/addhost'),
+        meta: { title: '注册主机', icon: 'add' }
+      },
+      {
+        path: 'hostinfo',
+        name: '主机详情',
+        hidden:'true',
+        component: () => import('@/views/host/hostinfo'),
+        meta: { title: '主机详情', icon: 'add' }
       }
     ]
   },
@@ -108,31 +171,38 @@ export const constantRouterMap = [
       }
     ]
   },
-  {
-    path: '/appstorn',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: '应用市场',
-        component: () => import('@/views/form/index'),
-        meta: { title: '应用市场', icon: 'app' }
-      }
-    ]
-  },
+
   {
     path: '/system',
     component: Layout,
+    name: '系统管理',
+    meta: { title: '系统管理', icon: 'sys' },
     children: [
       {
         path: 'index',
         name: '系统设置',
-        component: () => import('@/views/form/index'),
+        component: () => import('@/views/system/set'),
         meta: { title: '系统设置', icon: 'sys' }
-      }
+      },{
+        path: 'admin',
+        name: '账号管理',
+        component: () => import('@/views/system/admin'),
+        meta: { title: '账号管理', icon: 'user' }
+      },{
+        path: 'adduser',
+        name: '添加管理',
+        component: () => import('@/views/system/adduser'),
+        meta: { title: '添加管理', icon: 'user' }
+      },{
+        path: 'edituser',
+        name: '修改用户',
+        hidden:true,
+        component: () => import('@/views/system/edituser'),
+        meta: { title: '修改用户', icon: 'user' }
+      },
+
     ]
   },
-
 
   { path: '*', redirect: '/404', hidden: true }
 ]
